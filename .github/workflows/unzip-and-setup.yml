@@ -1,0 +1,29 @@
+name: Unzip J6 and Set Up
+
+on:
+  push:
+    paths:
+      - J6_full_project.zip
+    branches:
+      - main
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Unzip J6 Project
+        run: unzip J6_full_project.zip -d .
+
+      - name: Remove ZIP
+        run: rm J6_full_project.zip
+
+      - name: Commit Unzipped Files
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          git add .
+          git commit -m "Unzipped J6 project"
+          git push
