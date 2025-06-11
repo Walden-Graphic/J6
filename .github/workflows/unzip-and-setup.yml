@@ -3,7 +3,7 @@ name: Unzip J6 and Set Up
 on:
   push:
     paths:
-      - J6_full_project.zip
+      - J6_full_project(1).zip
     branches:
       - main
 
