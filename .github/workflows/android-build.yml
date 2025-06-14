@@ -24,16 +24,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install all dependencies (with legacy peer deps)
-        run: npm install --legacy-peer-deps
-
-      - name: Install Capacitor Android Platform
-        run: npm install @capacitor/android@5
+      - name: Install all dependencies
+        run: npm install @capacitor/android@5 --legacy-peer-deps
 
       - name: Build React app
         run: npm run build
 
-      - name: Add Android platform (skip if exists)
+      - name: Add Android platform (if missing)
         run: |
           if [ ! -d "android" ]; then
             npx cap add android
