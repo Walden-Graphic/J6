@@ -25,19 +25,24 @@ jobs:
           node-version: '20'
 
       - name: Install npm dependencies
-        run: npm install --force
+        run: npm install
 
       - name: Install Capacitor Android Platform
-        run: npm install @capacitor/android@5 --force
+        run: npm install @capacitor/android@5
 
       - name: Build React app
         run: npm run build
 
-      - name: Add Android platform
-        run: npx cap add android || echo "android folder already exists"
+      - name: Add Android platform (if missing)
+        run: |
+          if [ ! -d "./android" ]; then
+            ./node_modules/.bin/cap add android
+          else
+            echo "android folder already exists"
+          fi
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: ./node_modules/.bin/cap sync android
 
       - name: Build APK with Gradle
         run: cd android && ./gradlew assembleDebug
