@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Clean install (ajv fix)
+      - name: Clean install with ajv fix
         run: |
           rm -rf node_modules package-lock.json
           npm install ajv@^8.0.0 ajv-keywords --legacy-peer-deps
