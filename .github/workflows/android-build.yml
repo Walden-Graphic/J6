@@ -33,12 +33,12 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      - name: Add Android platform (if missing)
+      - name: Add Android platform if missing
         run: |
-          if [ ! -d "android" ]; then
+          if [ ! -d "./android" ]; then
             npx cap add android
           else
-            echo "android folder already exists"
+            echo "Android folder already exists"
           fi
 
       - name: Sync Capacitor
