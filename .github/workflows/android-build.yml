@@ -27,22 +27,20 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      - name: Install Capacitor Android Platform
-        run: npm install @capacitor/android@5
+      - name: Install OpenAI SDK
+        run: npm install openai
 
       - name: Build React app
         run: npm run build
 
-      - name: Add Android platform (if missing)
-        run: |
-          if [ ! -d "./android" ]; then
-            ./node_modules/.bin/cap add android
-          else
-            echo "android folder already exists"
-          fi
+      - name: Install Capacitor Android Platform
+        run: npm install @capacitor/android@5
+
+      - name: Add Android platform
+        run: npx cap add android || echo "android folder already exists"
 
       - name: Sync Capacitor
-        run: ./node_modules/.bin/cap sync android
+        run: npx cap sync android
 
       - name: Build APK with Gradle
         run: cd android && ./gradlew assembleDebug
