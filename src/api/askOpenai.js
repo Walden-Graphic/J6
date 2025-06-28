@@ -1,21 +1,18 @@
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
-const configuration = new Configuration({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+const openai = new OpenAI({
+  apiKey: 'sk-proj-...', // your actual key
+  dangerouslyAllowBrowser: true,
 });
 
-const openai = new OpenAIApi(configuration);
-
-export const askOpenai = async (messages) => {
+export const askJ6 = async (prompt) => {
   try {
-    const response = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages,
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
     });
-
-    return response.data.choices[0].message.content;
-  } catch (error) {
-    console.error('OpenAI API error:', error);
-    return 'There was an error connecting to the AI.';
+    return response.choices[0]?.message?.content || 'No response from J6.';
+  } catch (err) {
+    return `Error: ${err.message}`;
   }
 };
