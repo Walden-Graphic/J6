@@ -1,33 +1,28 @@
-// server/routes/openaiRoute.js
-
-import express from 'express';
-import OpenAI from 'openai';
-
+const express = require('express');
 const router = express.Router();
+const { OpenAI } = require('openai');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 router.post('/ask', async (req, res) => {
-  const { prompt } = req.body;
+  const { messages } = req.body;
 
-  if (!prompt) {
-    return res.status(400).json({ error: 'Prompt is required' });
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'Invalid messages format' });
   }
 
   try {
-    const chatResponse = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
-      messages: [{ role: 'user', content: prompt }],
+      messages,
     });
 
-    const message = chatResponse.choices?.[0]?.message?.content;
-    res.json({ response: message });
-  } catch (error) {
-    console.error('OpenAI Error:', error.message);
-    res.status(500).json({ error: 'Something went wrong with OpenAI' });
+    res.json({ reply: completion.choices[0]?.message?.content });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-export default router;
+module.exports = router;
