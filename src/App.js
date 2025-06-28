@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
-import { askJ6 } from './j6Client';
+import ChatBox from './components/ChatBox';
+import { askOpenai } from './api/askOpenai';
 
 const App = () => {
-  const [response, setResponse] = useState('Awaiting prompt...');
+  const [messages, setMessages] = useState([
+    { role: 'system', content: 'You are a helpful assistant.' },
+  ]);
 
-  const handleAsk = async () => {
-    const answer = await askJ6("Hello J6, are you online?");
-    setResponse(answer);
+  const handleSend = async (userInput) => {
+    const newMessages = [
+      ...messages,
+      { role: 'user', content: userInput }
+    ];
+    setMessages(newMessages);
+
+    const aiResponse = await askOpenai(newMessages);
+
+    setMessages([
+      ...newMessages,
+      { role: 'assistant', content: aiResponse }
+    ]);
   };
 
   return (
-    <div style={{ background: 'black', color: 'lime', height: '100vh', padding: '2rem' }}>
-      <h1>J6 Terminal</h1>
-      <button onClick={handleAsk}>Ping J6</button>
-      <pre style={{ marginTop: '1rem' }}>{response}</pre>
+    <div>
+      <h1>J6 AI Chat</h1>
+      <ChatBox messages={messages} onSend={handleSend} />
     </div>
   );
 };
