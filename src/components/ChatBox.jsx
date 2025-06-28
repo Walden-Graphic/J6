@@ -5,17 +5,18 @@ const ChatBox = ({ messages, onSend }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    onSend(input.trim());
-    setInput('');
+    if (input.trim()) {
+      onSend(input);
+      setInput('');
+    }
   };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '600px', margin: 'auto' }}>
-      <div style={{ border: '1px solid #ccc', padding: '1rem', height: '300px', overflowY: 'auto' }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{ margin: '0.5rem 0' }}>
-            <strong>{msg.role === 'user' ? 'You' : msg.role === 'assistant' ? 'J6' : 'System'}:</strong> {msg.content}
+    <div>
+      <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #ccc', padding: '1rem' }}>
+        {messages.map((msg, index) => (
+          <div key={index}>
+            <strong>{msg.role}:</strong> {msg.content}
           </div>
         ))}
       </div>
@@ -24,7 +25,7 @@ const ChatBox = ({ messages, onSend }) => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
+          placeholder="Type your message"
           style={{ width: '80%', padding: '0.5rem' }}
         />
         <button type="submit" style={{ padding: '0.5rem 1rem' }}>Send</button>
