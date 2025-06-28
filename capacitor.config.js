@@ -1,10 +1,8 @@
-import { CapacitorConfig } from '@capacitor/cli';
-
-const config: CapacitorConfig = {
-  appId: 'com.j6',
+const config = {
+  appId: 'com.j6.app',
   appName: 'J6',
   webDir: 'build',
-  bundledWebRuntime: false,
+  bundledWebRuntime: false
 };
 
-export default config;
+module.exports = config;
