@@ -1,67 +1,34 @@
 import React, { useState } from 'react';
-import { Configuration, OpenAIApi } from 'openai';
 
-const configuration = new Configuration({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-const ChatBox = () => {
-  const [messages, setMessages] = useState([]);
+const ChatBox = ({ messages, onSend }) => {
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const sendMessage = async () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!input.trim()) return;
-
-    const newMessages = [...messages, { role: 'user', content: input }];
-    setMessages(newMessages);
+    onSend(input.trim());
     setInput('');
-    setLoading(true);
-
-    try {
-      const response = await openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
-        messages: newMessages,
-      });
-
-      const reply = response.data.choices[0].message.content;
-      setMessages([...newMessages, { role: 'assistant', content: reply }]);
-    } catch (error) {
-      console.error('OpenAI error:', error);
-      setMessages([...newMessages, { role: 'assistant', content: 'Error generating response.' }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      sendMessage();
-    }
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      <div style={{ border: '1px solid #ccc', padding: 10, minHeight: 300, marginBottom: 10 }}>
+    <div style={{ padding: '1rem', maxWidth: '600px', margin: 'auto' }}>
+      <div style={{ border: '1px solid #ccc', padding: '1rem', height: '300px', overflowY: 'auto' }}>
         {messages.map((msg, i) => (
-          <div key={i}>
-            <strong>{msg.role === 'user' ? 'You' : 'AI'}:</strong> {msg.content}
+          <div key={i} style={{ margin: '0.5rem 0' }}>
+            <strong>{msg.role === 'user' ? 'You' : msg.role === 'assistant' ? 'J6' : 'System'}:</strong> {msg.content}
           </div>
         ))}
       </div>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyPress}
-        placeholder="Type a message..."
-        style={{ width: '100%', padding: 10 }}
-        disabled={loading}
-      />
-      <button onClick={sendMessage} disabled={loading} style={{ width: '100%', marginTop: 5 }}>
-        {loading ? 'Sending...' : 'Send'}
-      </button>
+      <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type a message..."
+          style={{ width: '80%', padding: '0.5rem' }}
+        />
+        <button type="submit" style={{ padding: '0.5rem 1rem' }}>Send</button>
+      </form>
     </div>
   );
 };
