@@ -1,38 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.J6.mobile'
+    namespace 'com.J6'
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.J6.mobile"
-        minSdkVersion 22
-        targetSdkVersion 33
-        versionCode 1
-        versionName "1.0"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-}
-apply plugin: 'com.android.application'
-
-android {
-    namespace 'com.J6.mobile'
-    compileSdkVersion 33
-
-    defaultConfig {
-        applicationId "com.J6.mobile"
+        applicationId "com.J6"
         minSdkVersion 22
         targetSdkVersion 33
         versionCode 1
