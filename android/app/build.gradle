@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.yourcompany.yourapp'
+    namespace 'com.TasKord.mobile'
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.yourcompany.yourapp"
+        applicationId "com.TasKord.mobile"
         minSdkVersion 22
         targetSdkVersion 33
         versionCode 1
@@ -28,11 +28,11 @@ dependencies {
 apply plugin: 'com.android.application'
 
 android {
-    namespace 'com.yourcompany.yourapp'
+    namespace 'com.TasKord.mobile'
     compileSdkVersion 33
 
     defaultConfig {
-        applicationId "com.yourcompany.yourapp"
+        applicationId "com.TasKord.mobile"
         minSdkVersion 22
         targetSdkVersion 33
         versionCode 1
