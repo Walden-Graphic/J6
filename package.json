@@ -2,19 +2,16 @@
   "name": "j6",
   "version": "1.0.0",
   "private": true,
-  "dependencies": {
-    "@capacitor/android": "^5.0.6",
-    "@capacitor/core": "^5.0.6",
-    "@capacitor/cli": "^5.0.6",
-    "openai": "^4.26.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
-  },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  }
+    "build": "react-scripts build"
+  },
+  "dependencies": {
+    "@capacitor/cli": "5.7.8",
+    "@capacitor/core": "5.7.8",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {}
 }
