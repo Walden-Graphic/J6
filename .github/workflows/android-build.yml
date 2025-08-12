@@ -24,16 +24,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          # If lockfile is missing, setup-node will warn but not fail.
-          cache-dependency-path: package-lock.json
+          # IMPORTANT: don't point to a non-existent lockfile to avoid the warning.
+          # cache-dependency-path is omitted on purpose.
 
-      - name: Print env
+      - name: Show tool versions
         run: |
           node -v
           npm -v
-          ls -la
+          java -version
 
-      # === Bulletproof deps install ===
+      # Lockfile-safe install: creates package-lock.json if missing, then installs.
       - name: Install dependencies (lockfile-safe)
         run: |
           set -e
@@ -48,19 +48,24 @@ jobs:
             npm ci || npm install --legacy-peer-deps
           fi
 
-      - name: Ensure Capacitor Android v5
-        run: npm install --no-audit --no-fund @capacitor/android@5.7.8
+      # Make sure Capacitor CLI and Android platform are present and aligned
+      - name: Ensure Capacitor CLI & Android
+        run: |
+          npm i -D @capacitor/cli@5.7.8
+          npm i @capacitor/android@5.7.8
 
       - name: Build web assets
         run: npm run build
 
+      # Recreate/sync native Android project from Capacitor every run (clean & consistent)
       - name: Recreate Android platform
         run: |
           rm -rf android
           npx cap add android
           npx cap sync android
 
-      - name: AndroidX flags
+      # Make sure AndroidX flags are set to satisfy AAR checks
+      - name: Ensure AndroidX flags
         run: |
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
@@ -68,7 +73,7 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x android/gradlew
 
-      - name: Build APK
+      - name: Build APK (debug)
         run: cd android && ./gradlew assembleDebug
 
       - name: Upload APK artifact
