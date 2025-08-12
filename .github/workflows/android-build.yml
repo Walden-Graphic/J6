@@ -24,28 +24,69 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      # If package-lock.json exists use npm ci, otherwise use npm install
-      - name: Install dependencies
+      - name: Print env versions
         run: |
+          node -v
+          npm -v
+          echo "workspace files:"
+          ls -la
+
+      # Rock-solid dependency install:
+      # 1) If package-lock.json exists -> npm ci
+      # 2) Else generate a lockfile -> npm install --package-lock-only
+      # 3) If install fails, retry with --legacy-peer-deps
+      # 4) On any failure, show the npm debug log
+      - name: Install dependencies (robust)
+        run: |
+          set -e
+          echo "::group::NPM config"
+          npm config set fund false
+          npm config set audit false
+          npm config set loglevel info
+          echo "::endgroup::"
+
           if [ -f package-lock.json ]; then
-            echo "Found package-lock.json → npm ci"
-            npm ci
+            echo "Found package-lock.json -> npm ci"
+            if ! npm ci; then
+              echo "npm ci failed – retrying with npm ci --legacy-peer-deps"
+              if ! npm ci --legacy-peer-deps; then
+                echo "npm ci still failed – printing debug log (if any)"
+                LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
+                [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
+                exit 1
+              fi
+            fi
           else
-            echo "No package-lock.json → npm install"
-            npm install
+            echo "No package-lock.json – creating one"
+            if ! npm install --package-lock-only; then
+              echo "Lockfile creation failed – printing debug log (if any)"
+              LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
+              [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
+              exit 1
+            fi
+            echo "Now installing deps with npm ci (clean, reproducible)"
+            if ! npm ci; then
+              echo "npm ci failed – retrying with npm install --legacy-peer-deps"
+              if ! npm install --legacy-peer-deps; then
+                echo "npm install (legacy) failed – printing debug log (if any)"
+                LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
+                [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
+                exit 1
+              fi
+            fi
           fi
 
-      # Ensure Android platform for Capacitor matches core (v5 line)
+      # Ensure Capacitor Android matches Capacitor core v5
       - name: Ensure Capacitor Android dependency
         run: |
-          npx --yes npm@latest -v > /dev/null
           npm install --no-audit --no-fund @capacitor/android@5.7.8
 
       - name: Build React web assets
         run: npm run build
 
-      # Always generate a clean native project on the runner
+      # Always generate a clean Android project on the runner
       - name: Add Android platform fresh
         run: |
           rm -rf android
@@ -54,12 +95,10 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      # Make sure the wrapper is executable
       - name: Ensure Gradle wrapper exec permission
         run: chmod +x android/gradlew
 
-      # Force AndroidX flags in case the template misses them
-      - name: Set AndroidX flags
+      - name: Force AndroidX flags
         run: |
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
