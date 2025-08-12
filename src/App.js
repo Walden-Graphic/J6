@@ -1,33 +1,27 @@
-import React, { useState } from 'react';
-import ChatBox from './components/ChatBox';
-import { askOpenai } from './api/askOpenai';
+import React, { useState } from "react";
+import ChatBox from "./components/ChatBox";
 
-const App = () => {
+export default function App() {
   const [messages, setMessages] = useState([
-    { role: 'system', content: 'You are a helpful assistant.' },
+    { role: "system", content: "You are J6, a friendly assistant." }
   ]);
 
-  const handleSend = async (userInput) => {
-    const newMessages = [
-      ...messages,
-      { role: 'user', content: userInput }
-    ];
-    setMessages(newMessages);
+  const handleSend = async (text) => {
+    const next = [...messages, { role: "user", content: text }];
+    setMessages(next);
 
-    const aiResponse = await askOpenai(newMessages);
-
-    setMessages([
-      ...newMessages,
-      { role: 'assistant', content: aiResponse }
-    ]);
+    // Placeholder AI behavior: echo with a prefix so the app builds without API keys.
+    const reply = `J6: ${text}`;
+    setMessages([...next, { role: "assistant", content: reply }]);
   };
 
   return (
-    <div>
-      <h1>J6 AI Chat</h1>
+    <div style={{ padding: 16 }}>
+      <header style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 24, fontWeight: 700 }}>J6</div>
+        <div style={{ opacity: 0.7, fontSize: 14 }}>online</div>
+      </header>
       <ChatBox messages={messages} onSend={handleSend} />
     </div>
   );
-};
-
-export default App;
+}
