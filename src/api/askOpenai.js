@@ -1,18 +1,8 @@
-import { OpenAI } from 'openai';
+const API_BASE =
+  process.env.REACT_APP_API_BASE || "http://YOUR-SERVER-HOST:8080";
 
-const openai = new OpenAI({
-  apiKey: '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',
-  dangerouslyAllowBrowser: true,
-});
-
-export const askOpenai = async (messages) => {
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages,
-    });
-    return response.choices[0]?.message?.content || 'No response from J6.';
-  } catch (err) {
-    return `Error: ${err.message}`;
-  }
-};
+export async function askOpenai(messages) {
+  const r = await fetch(`${API_BASE}/api/ask`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
