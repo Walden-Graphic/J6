@@ -19,13 +19,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Node.js
+      - name: Set up Node.js (no cache to silence lockfile warning)
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          # IMPORTANT: don't point to a non-existent lockfile to avoid the warning.
-          # cache-dependency-path is omitted on purpose.
 
       - name: Show tool versions
         run: |
@@ -33,7 +30,7 @@ jobs:
           npm -v
           java -version
 
-      # Lockfile-safe install: creates package-lock.json if missing, then installs.
+      # Create a lockfile if missing, then install deterministically
       - name: Install dependencies (lockfile-safe)
         run: |
           set -e
@@ -48,8 +45,7 @@ jobs:
             npm ci || npm install --legacy-peer-deps
           fi
 
-      # Make sure Capacitor CLI and Android platform are present and aligned
-      - name: Ensure Capacitor CLI & Android
+      - name: Ensure Capacitor toolchain
         run: |
           npm i -D @capacitor/cli@5.7.8
           npm i @capacitor/android@5.7.8
@@ -57,14 +53,12 @@ jobs:
       - name: Build web assets
         run: npm run build
 
-      # Recreate/sync native Android project from Capacitor every run (clean & consistent)
-      - name: Recreate Android platform
+      - name: Recreate and sync Android platform
         run: |
           rm -rf android
           npx cap add android
           npx cap sync android
 
-      # Make sure AndroidX flags are set to satisfy AAR checks
       - name: Ensure AndroidX flags
         run: |
           echo "android.useAndroidX=true" >> android/gradle.properties
