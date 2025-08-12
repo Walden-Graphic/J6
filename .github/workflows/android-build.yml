@@ -1,4 +1,3 @@
-# .github/workflows/android-build.yml
 name: Build APK
 
 on:
@@ -25,85 +24,51 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          # If lockfile is missing, setup-node will warn but not fail.
+          cache-dependency-path: package-lock.json
 
-      - name: Print env versions
+      - name: Print env
         run: |
           node -v
           npm -v
-          echo "workspace files:"
           ls -la
 
-      # Rock-solid dependency install:
-      # 1) If package-lock.json exists -> npm ci
-      # 2) Else generate a lockfile -> npm install --package-lock-only
-      # 3) If install fails, retry with --legacy-peer-deps
-      # 4) On any failure, show the npm debug log
-      - name: Install dependencies (robust)
+      # === Bulletproof deps install ===
+      - name: Install dependencies (lockfile-safe)
         run: |
           set -e
-          echo "::group::NPM config"
           npm config set fund false
           npm config set audit false
-          npm config set loglevel info
-          echo "::endgroup::"
-
           if [ -f package-lock.json ]; then
-            echo "Found package-lock.json -> npm ci"
-            if ! npm ci; then
-              echo "npm ci failed – retrying with npm ci --legacy-peer-deps"
-              if ! npm ci --legacy-peer-deps; then
-                echo "npm ci still failed – printing debug log (if any)"
-                LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
-                [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
-                exit 1
-              fi
-            fi
+            echo "Lockfile present -> npm ci"
+            npm ci || npm ci --legacy-peer-deps
           else
-            echo "No package-lock.json – creating one"
-            if ! npm install --package-lock-only; then
-              echo "Lockfile creation failed – printing debug log (if any)"
-              LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
-              [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
-              exit 1
-            fi
-            echo "Now installing deps with npm ci (clean, reproducible)"
-            if ! npm ci; then
-              echo "npm ci failed – retrying with npm install --legacy-peer-deps"
-              if ! npm install --legacy-peer-deps; then
-                echo "npm install (legacy) failed – printing debug log (if any)"
-                LOGFILE=$(ls -t /home/runner/.npm/_logs/*-debug-*.log 2>/dev/null | head -n1 || true)
-                [ -n "$LOGFILE" ] && { echo "::group::NPM DEBUG LOG"; cat "$LOGFILE"; echo "::endgroup::"; }
-                exit 1
-              fi
-            fi
+            echo "No lockfile -> generating one"
+            npm install --package-lock-only
+            npm ci || npm install --legacy-peer-deps
           fi
 
-      # Ensure Capacitor Android matches Capacitor core v5
-      - name: Ensure Capacitor Android dependency
-        run: |
-          npm install --no-audit --no-fund @capacitor/android@5.7.8
+      - name: Ensure Capacitor Android v5
+        run: npm install --no-audit --no-fund @capacitor/android@5.7.8
 
-      - name: Build React web assets
+      - name: Build web assets
         run: npm run build
 
-      # Always generate a clean Android project on the runner
-      - name: Add Android platform fresh
+      - name: Recreate Android platform
         run: |
           rm -rf android
           npx cap add android
+          npx cap sync android
 
-      - name: Sync Capacitor
-        run: npx cap sync android
-
-      - name: Ensure Gradle wrapper exec permission
-        run: chmod +x android/gradlew
-
-      - name: Force AndroidX flags
+      - name: AndroidX flags
         run: |
           echo "android.useAndroidX=true" >> android/gradle.properties
           echo "android.enableJetifier=true" >> android/gradle.properties
 
-      - name: Build APK with Gradle
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Build APK
         run: cd android && ./gradlew assembleDebug
 
       - name: Upload APK artifact
@@ -111,3 +76,4 @@ jobs:
         with:
           name: app-debug.apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
